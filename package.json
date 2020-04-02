@@ -1,0 +1,22 @@
+{
+  "name": "finite-automata-graph",
+  "version": "1.0.0",
+  "main": "src/app.ts",
+  "repository": "git@github.com:MarioJim/finite-automata-graph.git",
+  "author": "MarioJim <mario.emilio.j@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "webpack-dev-server --color --progress",
+    "build": "webpack --color --progress"
+  },
+  "dependencies": {
+    "@types/d3": "^5.7.2",
+    "d3": "^5.15.1",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
+  }
+}

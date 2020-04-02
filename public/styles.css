@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: gainsboro;
+}
+
+#page {
+    width: 100%;
+    height: 100vh;
+}
+
+h1 {
+    text-align: center;
+}

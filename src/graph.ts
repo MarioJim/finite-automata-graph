@@ -1,8 +1,8 @@
 import * as d3 from 'd3';
 import { State } from './types';
 
-const width = 800, height = 600;
-const circle_radius = 18;
+const width = 600, height = 500;
+const circle_radius = 25;
 
 export const setup_graph = () => {
   // Clear title
@@ -15,9 +15,33 @@ export const setup_graph = () => {
     .style('display', 'block');
 
   // Clear previous graphs
-  svg.selectAll('.edgepath').remove();
-  svg.selectAll('.edgelabel').remove();
-  svg.selectAll('.node').remove();
+  svg.selectAll('*').remove();
+
+  // Append defs
+  const defs = svg.append('defs');
+
+  // Add #arrowhead
+  defs.append('marker')
+    .attr('id', 'arrowhead')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', circle_radius + 3)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 13)
+    .attr('markerHeight', 13)
+    .append('path')
+    .attr('d', 'M0,-5 L10,0 L0,5');
+
+  // Add #arrowhead-self
+  defs.append('marker')
+    .attr('id', 'arrowhead-self')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', circle_radius - 6)
+    .attr('refY', 8)
+    .attr('orient', 165)
+    .attr('markerWidth', 13)
+    .attr('markerHeight', 13)
+    .append('path')
+    .attr('d', 'M0,-5 L10,0 L0,5');
 
   // Add lines to links
   const edgepaths = svg.selectAll('.edgepath')
@@ -28,7 +52,7 @@ export const setup_graph = () => {
     .attr('fill-opacity', 0)
     .attr('stroke', '#000')
     .attr('id', (_, i) => `edgepath${i}`)
-    .attr('marker-end', 'url(#arrowhead)')
+    .attr('marker-end', d => `url(#arrowhead${d.source === d.target ? '-self' : ''})`)
     .style('pointer-events', 'none');
 
   // Add titles to links
@@ -55,11 +79,14 @@ export const setup_graph = () => {
     .append('g')
     .attr('class', 'node');
 
-  node.append('circle').attr('r', circle_radius);
+  node.append('circle')
+    .attr('fill', 'lightgreen')
+    .attr('r', circle_radius);
 
-  node.append('title').text(d => d.name);
-
-  node.append('text').attr('dy', -circle_radius).attr('dx', circle_radius).text(d => d.name);
+  node.append('text')
+    .attr('dy', 5)
+    .attr('text-anchor', 'middle')
+    .text(d => d.name);
 
   const ticked = () => {
     node.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -67,7 +94,11 @@ export const setup_graph = () => {
     edgepaths.attr('d', d => {
       const s = (d.source as State), t = (d.target as State);
       const r = Math.hypot(t.x - s.x, t.y - s.y);
-      return `M ${s.x},${s.y} A${r},${r} 0 0,1 ${t.x},${t.y}`;
+      return r === 0
+        ? `M${s.x + 10},${s.y - 10}
+          A20,20,0,1,1,${s.x + 40},${s.y - 40}
+          A20,20,0,1,1,${s.x + 10},${s.y - 10}`
+        : `M ${s.x},${s.y} A${r},${r},0,0,1,${t.x},${t.y}`;
     });
 
     edgelabels.attr('transform', (d, i, nodes) => {

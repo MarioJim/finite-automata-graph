@@ -1,15 +1,17 @@
+import { SimulationNodeDatum, SimulationLinkDatum } from "d3";
+
 export interface FiniteAutomata {
   states: State[]
-  language: string[]
-  starting_state_index: number
+  alphabet: string[]
+  transitions: Transition[]
+  starting_state: string
 }
 
-interface State {
+export interface State extends SimulationNodeDatum {
   name: string
   is_finishing_state: boolean
-  transitions: Transitions
 }
 
-interface Transitions {
-  [key: string]: number[]
+interface Transition extends SimulationLinkDatum<State> {
+  symbol: string
 }

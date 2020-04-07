@@ -1,23 +1,34 @@
+import { setup_graph } from './graph';
+
+const find_state_index = (state_name: string) =>
+  window.automata.states.findIndex(s => s.name === state_name);
+
 export const process_file = (file: string) => {
   window.automata = {
     states: [],
-    language: [],
-    starting_state_index: -1,
+    alphabet: [],
+    transitions: [],
+    starting_state: '',
   };
   const lines = file.split('\n').map(line => line.trim()).filter(line => line !== '');
+
   // State names
-  window.automata.states = lines.shift().split(',')
-    .map(name => ({ name, is_finishing_state: false, transitions: {}, }));
-  // Language
-  window.automata.language = lines.shift().split(',');
+  window.automata.states = lines.shift().split(',').map(state_name => ({
+    name: state_name,
+    is_finishing_state: false,
+  }));
+
+  // Alphabet
+  window.automata.alphabet = lines.shift().split(',');
+
   // Starting state
-  const starting_state = lines.shift();
-  window.automata.starting_state_index =
-    window.automata.states.findIndex(state => state.name === starting_state);
+  window.automata.starting_state = lines.shift();
+
   // Finishing states
   lines.shift().split(',').forEach(state_name => {
-    window.automata.states.find(state => state.name === state_name).is_finishing_state = true;
+    window.automata.states.find(s => s.name === state_name).is_finishing_state = true;
   });
+
   // Transitions
   const transition_string_regex = /q\d+,.=>q\d+(,q\d+)*/;
   lines.forEach(transition_string => {
@@ -25,12 +36,14 @@ export const process_file = (file: string) => {
       return console.log(`String "${transition_string}" couldn't be parsed as a transition`);
 
     const split_transition = transition_string.split('=>');
-    const [state_name, symbol] = split_transition[0].split(',');
-    const state_index = window.automata.states.findIndex(state => state.name === state_name);
-    window.automata.states[state_index].transitions[symbol] = split_transition[1]
-      .split(',')
-      .map(state_name => window.automata.states.findIndex(state => state.name === state_name));
+    const [source_state, symbol] = split_transition[0].split(',');
+    const source_index = find_state_index(source_state);
+    window.automata.transitions.push(
+      ...split_transition[1].split(',').map(target_state => ({
+        source: source_index,
+        target: find_state_index(target_state),
+        symbol
+      }))
+    );
   });
-
-  console.log(window.automata);
 };

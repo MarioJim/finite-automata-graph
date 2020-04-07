@@ -1,4 +1,5 @@
 import { process_file } from './file_processor';
+import { setup_graph } from './graph';
 import { FiniteAutomata } from './types';
 
 declare global {
@@ -8,10 +9,8 @@ declare global {
 }
 
 document.addEventListener('readystatechange', () => {
-  if (document.readyState === 'interactive') {
-    console.log('Page has finished loading');
+  if (document.readyState === 'interactive')
     addDropListener();
-  }
 });
 
 const ignoreEvent = (event: DragEvent) => {
@@ -31,8 +30,14 @@ const addDropListener = () => {
     const reader = new FileReader();
     reader.onload = event => {
       if (typeof event.target.result === 'string')
-        process_file(event.target.result);
+        recievedFile(event.target.result);
     };
     reader.readAsText(file);
   };
+};
+
+const recievedFile = (file: string) => {
+  process_file(file);
+  console.log(window.automata);
+  setup_graph();
 };

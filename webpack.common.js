@@ -18,18 +18,4 @@ module.exports = {
     filename: 'app.bundle.js',
     path: path.resolve(__dirname, 'public'),
   },
-  mode: 'development',
-  devtool: 'eval-cheap-module-source-map',
-  // mode: 'production',
-  // devtool: false,
-  devServer: {
-    contentBase: path.join(__dirname, 'public'),
-    watchContentBase: true,
-    compress: true,
-    open: true,
-    port: 8080
-  },
-  stats: {
-    modulesSort: 'size',
-  },
-}
+};

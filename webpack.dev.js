@@ -1,0 +1,18 @@
+const path = require('path');
+const merge = require('webpack-merge');
+const common = require('./webpack.common.js');
+
+module.exports = merge(common, {
+  mode: 'development',
+  devtool: 'eval-cheap-module-source-map',
+  devServer: {
+    contentBase: path.join(__dirname, 'public'),
+    watchContentBase: true,
+    compress: true,
+    open: true,
+    port: 8080
+  },
+  stats: {
+    modulesSort: 'size',
+  },
+});

@@ -73,6 +73,7 @@ export const setup_graph = () => {
     .attr('fill', 'black')
     .text(d => d.symbol);
 
+  // Add nodes
   const node = svg.selectAll('.node')
     .data(window.automata.states)
     .enter()
@@ -88,33 +89,32 @@ export const setup_graph = () => {
     .attr('text-anchor', 'middle')
     .text(d => d.name);
 
-  const ticked = () => {
-    node.attr('transform', d => `translate(${d.x},${d.y})`);
-
-    edgepaths.attr('d', d => {
-      const s = (d.source as State), t = (d.target as State);
-      const r = Math.hypot(t.x - s.x, t.y - s.y);
-      return r === 0
-        ? `M${s.x + 10},${s.y - 10}
-          A20,20,0,1,1,${s.x + 40},${s.y - 40}
-          A20,20,0,1,1,${s.x + 10},${s.y - 10}`
-        : `M ${s.x},${s.y} A${r},${r},0,0,1,${t.x},${t.y}`;
-    });
-
-    edgelabels.attr('transform', (d, i, nodes) => {
-      if ((d.target as State).x < (d.source as State).x) {
-        const bbox = nodes[i].getBBox();
-        const rx = bbox.x + bbox.width / 2;
-        const ry = bbox.y + bbox.height / 2;
-        return `rotate(180 ${rx} ${ry})`;
-      }
-      return 'rotate(0)';
-    });
-  };
-
+  // Add force simulation
   d3.forceSimulation(window.automata.states)
     .force('link', d3.forceLink(window.automata.transitions).distance(300).strength(1))
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .on('tick', ticked);
+    .on('tick', () => {
+      node.attr('transform', d => `translate(${d.x},${d.y})`);
+
+      edgepaths.attr('d', d => {
+        const s = (d.source as State), t = (d.target as State);
+        const r = Math.hypot(t.x - s.x, t.y - s.y);
+        return r === 0
+          ? `M${s.x + 10},${s.y - 10}
+            A20,20,0,1,1,${s.x + 40},${s.y - 40}
+            A20,20,0,1,1,${s.x + 10},${s.y - 10}`
+          : `M ${s.x},${s.y} A${r},${r},0,0,1,${t.x},${t.y}`;
+      });
+
+      edgelabels.attr('transform', (d, i, nodes) => {
+        if ((d.target as State).x < (d.source as State).x) {
+          const bbox = nodes[i].getBBox();
+          const rx = bbox.x + bbox.width / 2;
+          const ry = bbox.y + bbox.height / 2;
+          return `rotate(180 ${rx} ${ry})`;
+        }
+        return 'rotate(0)';
+      });
+    });
 };

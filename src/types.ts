@@ -16,12 +16,4 @@ export interface Transition extends SimulationLinkDatum<State> {
   symbol: string
 }
 
-export const AutomataTypes = {
-  originalNFA: 'originalNFA',
-  convertedDFA: 'convertedDFA',
-  minimizedDFA: 'minimizedDFA',
-};
-
-export type AutomatasInWindow = {
-  [key in keyof typeof AutomataTypes]: FiniteAutomata
-};
+export type AutomataSelection = 'original_NFA' | 'converted_DFA' | 'minimized_DFA';

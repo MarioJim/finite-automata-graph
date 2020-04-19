@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
-import { State, AutomataTypes } from './types';
+import { AutomataSelection, State } from './types';
 
 const width = 600, height = 500;
 const circle_radius = 25;
 
-export const setup_graph = (showing: string) => {
+export const setup_graph = (showing: AutomataSelection) => {
   // Clear title
   const page = d3.select('#page');
   page.select('h1').remove();

@@ -5,9 +5,30 @@ body {
     background-color: gainsboro;
 }
 
+header {
+    width: 100%;
+    height: 8%;
+    background-color: whitesmoke;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+header button {
+    font-size: 16px;
+    background-color: grey;
+    border: none;
+    padding: 1.5vh 32px;
+}
+
+header p, header h2 {
+    margin: 2px;
+    text-align: center;
+}
+
 #page {
     width: 100%;
-    height: 100%;
+    height: 92%;
     display: flex;
     align-items: center;
     justify-content: center;

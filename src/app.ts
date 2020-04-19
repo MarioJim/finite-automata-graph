@@ -1,16 +1,15 @@
 import { process_file } from './file_processor';
 import { setup_graph } from './graph';
-import { FiniteAutomata } from './types';
+import { AutomataTypes, AutomatasInWindow, FiniteAutomata } from './types';
 
 declare global {
-  interface Window {
-    automata: FiniteAutomata
+  interface Window extends AutomatasInWindow {
+    [index: string]: FiniteAutomata
   }
 }
 
 document.addEventListener('readystatechange', () => {
-  if (document.readyState === 'interactive')
-    addDropListener();
+  if (document.readyState === 'interactive') addDropListener();
 });
 
 const ignore_event = (event: DragEvent) => {
@@ -38,6 +37,6 @@ const addDropListener = () => {
 
 const recieved_file = (file: string) => {
   process_file(file);
-  console.log(window.automata);
-  setup_graph();
+  console.log(window[AutomataTypes.originalNFA]);
+  setup_graph(AutomataTypes.originalNFA);
 };

@@ -1,10 +1,10 @@
 import * as d3 from 'd3';
-import { State } from './types';
+import { State, AutomataTypes } from './types';
 
 const width = 600, height = 500;
 const circle_radius = 25;
 
-export const setup_graph = () => {
+export const setup_graph = (showing: string) => {
   // Clear title
   const page = d3.select('#page');
   page.select('h1').remove();
@@ -45,7 +45,7 @@ export const setup_graph = () => {
 
   // Add lines to links
   const edgepaths = svg.selectAll('.edgepath')
-    .data(window.automata.transitions)
+    .data(window[showing].transitions)
     .enter()
     .append('path')
     .attr('class', 'edgepath')
@@ -57,7 +57,7 @@ export const setup_graph = () => {
 
   // Add titles to links
   const edgelabels = svg.selectAll('.edgelabel')
-    .data(window.automata.transitions)
+    .data(window[showing].transitions)
     .enter()
     .append('text')
     .attr('class', 'edgelabel')
@@ -75,7 +75,7 @@ export const setup_graph = () => {
 
   // Add nodes
   const node = svg.selectAll('.node')
-    .data(window.automata.states)
+    .data(window[showing].states)
     .enter()
     .append('g')
     .attr('class', 'node');
@@ -90,8 +90,8 @@ export const setup_graph = () => {
     .text(d => d.name);
 
   // Add force simulation
-  d3.forceSimulation(window.automata.states)
-    .force('link', d3.forceLink(window.automata.transitions).distance(300).strength(1))
+  d3.forceSimulation(window[showing].states)
+    .force('link', d3.forceLink(window[showing].transitions).distance(300).strength(1))
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2))
     .on('tick', () => {

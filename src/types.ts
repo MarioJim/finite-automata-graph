@@ -1,4 +1,4 @@
-import { SimulationNodeDatum, SimulationLinkDatum } from "d3";
+import { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
 
 export interface FiniteAutomata {
   states: State[]

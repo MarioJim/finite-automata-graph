@@ -1,17 +1,21 @@
-import { FiniteAutomata } from "./types";
+import { FiniteAutomata } from './types';
 
 const get_new_automata = (): FiniteAutomata =>
   ({ states: [], alphabet: [], transitions: [], starting_state: '', });
 
 /**
+ * Function to get the index from a state name in the original NFA
+ * @param state_name the state name
+ */
+const find_state_index = (state_name: string) =>
+  window.original_NFA.states.findIndex(s => s.name === state_name);
+
+/**
  * Parses the file into an automata saved at window
  * @param file the file to be parsed
  */
-const parse_original_nfa = (file: String) => {
+export const parse_original_nfa = (file: String) => {
   window.original_NFA = get_new_automata();
-  // Function to get the index from a state name
-  const find_state_index = (state_name: string) =>
-    window.original_NFA.states.findIndex(s => s.name === state_name);
   // Split the file into lines
   const lines = file.split('\n').map(line => line.trim()).filter(line => line !== '');
   // State names
@@ -25,7 +29,7 @@ const parse_original_nfa = (file: String) => {
   window.original_NFA.starting_state = lines.shift();
   // Finishing states
   lines.shift().split(',').forEach(state_name => {
-    window.original_NFA.states.find(s => s.name === state_name).is_finishing_state = true;
+    window.original_NFA.states[find_state_index(state_name)].is_finishing_state = true;
   });
   // Transitions
   lines.forEach(transition_string => {
@@ -46,10 +50,14 @@ const parse_original_nfa = (file: String) => {
  * Converts the NFA currently saved in window into an DFA saved also
  * in window.
  */
-const convert_DFA_to_NFA = () => {
+export const convert_DFA_to_NFA = () => {
   window.converted_DFA = get_new_automata();
   /* Build NFA table */
-  const NFA: any = {};
+  const NFA: {
+    [key: string]: {
+      [key: string]: string[]
+    }
+  } = {};
   window.original_NFA.states.forEach(state => {
     NFA[state.name] = {};
     window.original_NFA.alphabet.forEach(symbol => {
@@ -58,7 +66,7 @@ const convert_DFA_to_NFA = () => {
   });
   // Function to get the name from a index in the original states
   const index_to_name = (index: any): string =>
-    window.original_NFA.states[(index as any)].name;
+    window.original_NFA.states[index].name;
   // For every transition registered, build the NFA table
   window.original_NFA.transitions.forEach(trans => {
     NFA[index_to_name(trans.source)][trans.symbol].push(index_to_name(trans.target));
@@ -66,15 +74,22 @@ const convert_DFA_to_NFA = () => {
   console.log(NFA);
 
   /* Build DFA table */
-  const starting_state = window.original_NFA.starting_state;
-  const DFA: any = {};
-  DFA[starting_state] = {};
+  // Copy starting state and alphabet from original NFA
+  window.converted_DFA.starting_state = window.original_NFA.starting_state;
+  window.converted_DFA.alphabet = Array.from(window.original_NFA.alphabet);
+
+  const DFA: {
+    [key: string]: {
+      [key: string]: string
+    }
+  } = {};
+  DFA[window.converted_DFA.starting_state] = {};
   // For every symbol in the alphabet...
   window.original_NFA.alphabet.forEach(symbol => {
     // Generate the new state name
-    const new_state = NFA[starting_state][symbol].sort().join(',');
+    const new_state = NFA[window.converted_DFA.starting_state][symbol].sort().join(',');
     // Set it as the resulting state from the starting state
-    DFA[starting_state][symbol] = new_state;
+    DFA[window.converted_DFA.starting_state][symbol] = new_state;
     // Add it to the states table it it isn't empty
     if (new_state !== '')
       DFA[new_state] = undefined;
@@ -104,12 +119,25 @@ const convert_DFA_to_NFA = () => {
     // Get the states that haven't been calculated
     array_of_undefined_states = Object.keys(DFA).filter(key => typeof DFA[key] === 'undefined');
   }
-
-  console.log(DFA);
-
-};
-
-export const process_file = (file: string) => {
-  parse_original_nfa(file);
-  convert_DFA_to_NFA();
+  // Setup states of the converted DFA
+  window.converted_DFA.states = Object.keys(DFA).map(name => {
+    // Check if any state that composes this one is a finishing state in the original NFA
+    const is_finishing_state = name.split(',').some(state_name =>
+      window.original_NFA.states[find_state_index(state_name)].is_finishing_state
+    );
+    return { name, is_finishing_state, };
+  });
+  // For every source_state: transitions relation in DFA
+  Object.entries(DFA).forEach(([source_state, transitions]) => {
+    // Get the index of the source state
+    const source = window.converted_DFA.states.findIndex(s => s.name === source_state);
+    // For every symbol: target_state relation in transitions
+    Object.entries(transitions).forEach(([symbol, target_state]) => {
+      // Get the index of the target state
+      const target = window.converted_DFA.states.findIndex(s => s.name === target_state);
+      // If the index was found (it wasn't the sink state) add it to the transitions array
+      if (target !== -1)
+        window.converted_DFA.transitions.push({ symbol, source, target, });
+    });
+  });
 };

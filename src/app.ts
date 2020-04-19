@@ -1,4 +1,4 @@
-import { process_file } from './file_processor';
+import { parse_original_nfa, convert_DFA_to_NFA } from './automata_processor';
 import { setup_graph } from './graph';
 import { FiniteAutomata } from './types';
 
@@ -12,7 +12,10 @@ declare global {
 
 // When document is ready, call add_drop_listener
 document.addEventListener('readystatechange', () => {
-  if (document.readyState === 'interactive') add_drop_listener();
+  if (document.readyState === 'interactive') {
+    add_drop_listener();
+    add_button_listeners();
+  }
 });
 
 const ignore_event = (event: DragEvent) => {
@@ -45,11 +48,30 @@ const add_drop_listener = () => {
 };
 
 /**
- * Processes the 
+ * Adds the corresponding button listeners to the buttons in
+ * the header
+ */
+const add_button_listeners = () => {
+  document.getElementById('originalNFABtn').onclick = () => {
+    setup_graph('original_NFA');
+  };
+  document.getElementById('convertToDFABtn').onclick = () => {
+    setup_graph('converted_DFA');
+  };
+  document.getElementById('minimizeDFABtn').onclick = () => {
+    setup_graph('minimized_DFA');
+  };
+};
+
+/**
+ * Processes the recieved file
  * @param file 
  */
 const recieved_file = (file: string) => {
-  process_file(file);
+  parse_original_nfa(file);
   console.log(window.original_NFA);
+  convert_DFA_to_NFA();
+  console.log(window.converted_DFA);
+
   setup_graph('original_NFA');
 };

@@ -14,7 +14,7 @@ const find_state_index = (state_name: string) =>
  * Parses the file into an automata saved at window
  * @param file the file to be parsed
  */
-export const parse_original_nfa = (file: String) => {
+export const parse_original_NFA = (file: String) => {
   window.original_NFA = get_new_automata();
   // Split the file into lines
   const lines = file.split('\n').map(line => line.trim()).filter(line => line !== '');
@@ -50,8 +50,12 @@ export const parse_original_nfa = (file: String) => {
  * Converts the NFA currently saved in window into an DFA saved also
  * in window.
  */
-export const convert_DFA_to_NFA = () => {
+export const convert_NFA_to_DFA = () => {
   window.converted_DFA = get_new_automata();
+  // Copy starting state and alphabet from original NFA
+  window.converted_DFA.starting_state = window.original_NFA.starting_state;
+  window.converted_DFA.alphabet = Array.from(window.original_NFA.alphabet);
+
   /* Build NFA table */
   const NFA: {
     [key: string]: {
@@ -71,13 +75,8 @@ export const convert_DFA_to_NFA = () => {
   window.original_NFA.transitions.forEach(trans => {
     NFA[index_to_name(trans.source)][trans.symbol].push(index_to_name(trans.target));
   });
-  console.log(NFA);
 
   /* Build DFA table */
-  // Copy starting state and alphabet from original NFA
-  window.converted_DFA.starting_state = window.original_NFA.starting_state;
-  window.converted_DFA.alphabet = Array.from(window.original_NFA.alphabet);
-
   const DFA: {
     [key: string]: {
       [key: string]: string
@@ -119,6 +118,8 @@ export const convert_DFA_to_NFA = () => {
     // Get the states that haven't been calculated
     array_of_undefined_states = Object.keys(DFA).filter(key => typeof DFA[key] === 'undefined');
   }
+
+  /* Convert the DFA table into a FiniteAutomata struct */
   // Setup states of the converted DFA
   window.converted_DFA.states = Object.keys(DFA).map(name => {
     // Check if any state that composes this one is a finishing state in the original NFA
@@ -140,4 +141,43 @@ export const convert_DFA_to_NFA = () => {
         window.converted_DFA.transitions.push({ symbol, source, target, });
     });
   });
+};
+
+/**
+ * Minimizes the DFA currently saved in window and saves also in the 
+ * window
+ */
+export const minimize_DFA = () => {
+  window.minimized_DFA = get_new_automata();
+  // Copy starting state and alphabet from original NFA
+  window.minimized_DFA.starting_state = window.converted_DFA.starting_state;
+  window.minimized_DFA.alphabet = Array.from(window.converted_DFA.alphabet);
+
+  // No tiene tipo, por eso no sugiere nada
+  // Lo creo para crear un "id" para cada estado, que consiste de transiciones y si es estado final
+  // La idea es que si un id es igual a otro, puedes juntar ambos estados
+  const minDFA: any = {};
+  // Empiezo con si es final
+  window.converted_DFA.states.forEach(state => {
+    minDFA[state.name] = [state.is_finishing_state];
+  });
+  // Le añado sus transiciones
+  window.converted_DFA.transitions.forEach(transition => {
+    minDFA[window.converted_DFA.states[(transition.source as number)].name]
+      .push('' + transition.symbol + transition.target);
+  });
+  // Las ordeno y las junto
+  Object.keys(minDFA).forEach(key => {
+    const value = minDFA[key].sort().join(':');
+    minDFA[key] = value;
+  });
+  // Las imprimo en la consola
+  console.log(minDFA);
+
+  // Seguiría buscar si hay ids iguales
+  // Les sugiero ordenarlos y comparar entre pares
+  // Está medio culero volverlo a poner en el formato necesario para que lo muestre el d3
+  // Pero pueden checar el archivo de types para ver más o menos la estructura
+  // El grafo se leería de una estructura FiniteAutomata en window.minimized_DFA
+  // Ya tiene alphabet e initial state, falta volver a poner states y transitions
 };

@@ -1,4 +1,4 @@
-import { parse_original_nfa, convert_DFA_to_NFA } from './automata_processor';
+import { parse_original_NFA, convert_NFA_to_DFA, minimize_DFA } from './automata_processor';
 import { setup_graph } from './graph';
 import { FiniteAutomata } from './types';
 
@@ -68,10 +68,10 @@ const add_button_listeners = () => {
  * @param file 
  */
 const recieved_file = (file: string) => {
-  parse_original_nfa(file);
+  parse_original_NFA(file);
   console.log(window.original_NFA);
-  convert_DFA_to_NFA();
+  convert_NFA_to_DFA();
   console.log(window.converted_DFA);
-
+  minimize_DFA();
   setup_graph('original_NFA');
 };

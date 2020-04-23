@@ -1,7 +1,42 @@
-import { FiniteAutomata } from './types';
+import { FiniteAutomata, AutomataSelection } from './types';
 
 const get_new_automata = (): FiniteAutomata =>
   ({ states: [], alphabet: [], transitions: [], initial_state: '', });
+
+/**
+ * Searches the transitions for ones that have equal source and target,
+ * and merges its symbols into one so they don't overlap in the graphic
+ * @param automata the automata to apply it to
+ */
+const merge_transitions = (automata: AutomataSelection) => {
+  const transitions_ids: {
+    [key: string]: string[]
+  } = {};
+  // For each transition in the automata...
+  window[automata].transitions.forEach(transition => {
+    // Generate an id joining its source and its target
+    const id = `${transition.source}_${transition.target}`;
+    // Create an array if it hasn't been created
+    if (transitions_ids[id] === undefined)
+      transitions_ids[id] = [];
+    // Add the symbol to its array
+    transitions_ids[id].push(transition.symbol);
+  });
+  // For each key-value pair in transitions_id...
+  Object.entries(transitions_ids).forEach(transition_group => {
+    // If the transition is unique, do nothing
+    if (transition_group[1].length === 1) return;
+    // If it isn't, parse the source and target
+    const source = +transition_group[0].split('_')[0];
+    const target = +transition_group[0].split('_')[1];
+    // Filter out every transition that has the same source and target
+    window[automata].transitions = window[automata].transitions
+      .filter(transition => transition.source !== source || transition.target !== target);
+    // Add a new one with the symbols merged together
+    const symbol = transition_group[1].join(',');
+    window[automata].transitions.push({ source, target, symbol, });
+  });
+};
 
 /**
  * Function to get the index from a state name in the original NFA
@@ -44,6 +79,7 @@ export const parse_original_NFA = (file: String) => {
       }))
     );
   });
+  merge_transitions('original_NFA');
 };
 
 /**
@@ -73,7 +109,9 @@ export const convert_NFA_to_DFA = () => {
     window.original_NFA.states[index].name;
   // For every transition registered, build the NFA table
   window.original_NFA.transitions.forEach(trans => {
-    NFA[index_to_name(trans.source)][trans.symbol].push(index_to_name(trans.target));
+    trans.symbol.split(',').forEach(symbol => {
+      NFA[index_to_name(trans.source)][symbol].push(index_to_name(trans.target));
+    })
   });
 
   /* Build DFA table */
@@ -91,32 +129,32 @@ export const convert_NFA_to_DFA = () => {
     DFA[window.converted_DFA.initial_state][symbol] = new_state;
     // Add it to the states table it it isn't empty
     if (new_state !== '')
-      DFA[new_state] = undefined;
+      DFA[new_state] = null;
   });
   // Get the states that haven't been calculated
-  let array_of_undefined_states = Object.keys(DFA).filter(key => typeof DFA[key] === 'undefined');
-  while (array_of_undefined_states.length !== 0) {
+  let array_of_null_states = Object.keys(DFA).filter(key => DFA[key] === null);
+  while (array_of_null_states.length !== 0) {
     // For every state that hasn't been initialized...
-    array_of_undefined_states.forEach(undefined_state => {
+    array_of_null_states.forEach(null_state => {
       // Initialize it as a empty object
-      DFA[undefined_state] = {};
-      // Get the transitions from every state that composes the undefined state
-      const state_transitions = undefined_state.split(',').map(state => NFA[state]);
+      DFA[null_state] = {};
+      // Get the transitions from every state that composes the null state
+      const state_transitions = null_state.split(',').map(state => NFA[state]);
       // For every symbol in the alphabet...
       window.original_NFA.alphabet.forEach(symbol => {
         // Calculate the ending set of states (no repeating elements)
         const set_of_ending_states = new Set(state_transitions.flatMap(trans => trans[symbol]));
         // Convert it into an array, sort it and put them together
         const new_state_name = Array.from(set_of_ending_states).sort().join(',');
-        // Set it as the resulting state from the undefined state
-        DFA[undefined_state][symbol] = new_state_name;
+        // Set it as the resulting state from the null state
+        DFA[null_state][symbol] = new_state_name;
         // If it hasn't been calculated and it isn't empty, add it to the states table
         if (new_state_name !== '' && !Object.keys(DFA).includes(new_state_name))
-          DFA[new_state_name] = undefined;
+          DFA[new_state_name] = null;
       });
     });
     // Get the states that haven't been calculated
-    array_of_undefined_states = Object.keys(DFA).filter(key => typeof DFA[key] === 'undefined');
+    array_of_null_states = Object.keys(DFA).filter(key => DFA[key] === null);
   }
 
   /* Convert the DFA table into a FiniteAutomata struct */
@@ -141,6 +179,7 @@ export const convert_NFA_to_DFA = () => {
         window.converted_DFA.transitions.push({ symbol, source, target, });
     });
   });
+  merge_transitions('converted_DFA');
 };
 
 /**
@@ -180,4 +219,6 @@ export const minimize_DFA = () => {
   // Pero pueden checar el archivo de types para ver más o menos la estructura
   // El grafo se leería de una estructura FiniteAutomata en window.minimized_DFA
   // Ya tiene alphabet e initial state, falta volver a poner states y transitions
+
+  merge_transitions('minimized_DFA');
 };

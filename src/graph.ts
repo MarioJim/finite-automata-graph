@@ -60,6 +60,7 @@ export const setup_graph = (showing: AutomataSelection) => {
     .data(window[showing].transitions)
     .enter()
     .append('text')
+    .attr('dy', -3)
     .attr('class', 'edgelabel')
     .attr('font-size', 10)
     .attr('id', (_, i) => `edgelabel${i}`)

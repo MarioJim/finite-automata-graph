@@ -4,7 +4,7 @@ export interface FiniteAutomata {
   states: State[]
   alphabet: string[]
   transitions: Transition[]
-  starting_state: string
+  initial_state: string
 }
 
 export interface State extends SimulationNodeDatum {

@@ -1,7 +1,7 @@
 import { FiniteAutomata } from './types';
 
 const get_new_automata = (): FiniteAutomata =>
-  ({ states: [], alphabet: [], transitions: [], starting_state: '', });
+  ({ states: [], alphabet: [], transitions: [], initial_state: '', });
 
 /**
  * Function to get the index from a state name in the original NFA
@@ -26,7 +26,7 @@ export const parse_original_NFA = (file: String) => {
   // Alphabet
   window.original_NFA.alphabet = lines.shift().split(',');
   // Starting state
-  window.original_NFA.starting_state = lines.shift();
+  window.original_NFA.initial_state = lines.shift();
   // Finishing states
   lines.shift().split(',').forEach(state_name => {
     window.original_NFA.states[find_state_index(state_name)].is_finishing_state = true;
@@ -52,8 +52,8 @@ export const parse_original_NFA = (file: String) => {
  */
 export const convert_NFA_to_DFA = () => {
   window.converted_DFA = get_new_automata();
-  // Copy starting state and alphabet from original NFA
-  window.converted_DFA.starting_state = window.original_NFA.starting_state;
+  // Copy initial state and alphabet from original NFA
+  window.converted_DFA.initial_state = window.original_NFA.initial_state;
   window.converted_DFA.alphabet = Array.from(window.original_NFA.alphabet);
 
   /* Build NFA table */
@@ -82,13 +82,13 @@ export const convert_NFA_to_DFA = () => {
       [key: string]: string
     }
   } = {};
-  DFA[window.converted_DFA.starting_state] = {};
+  DFA[window.converted_DFA.initial_state] = {};
   // For every symbol in the alphabet...
   window.original_NFA.alphabet.forEach(symbol => {
     // Generate the new state name
-    const new_state = NFA[window.converted_DFA.starting_state][symbol].sort().join(',');
-    // Set it as the resulting state from the starting state
-    DFA[window.converted_DFA.starting_state][symbol] = new_state;
+    const new_state = NFA[window.converted_DFA.initial_state][symbol].sort().join(',');
+    // Set it as the resulting state from the initial state
+    DFA[window.converted_DFA.initial_state][symbol] = new_state;
     // Add it to the states table it it isn't empty
     if (new_state !== '')
       DFA[new_state] = undefined;
@@ -149,8 +149,8 @@ export const convert_NFA_to_DFA = () => {
  */
 export const minimize_DFA = () => {
   window.minimized_DFA = get_new_automata();
-  // Copy starting state and alphabet from original NFA
-  window.minimized_DFA.starting_state = window.converted_DFA.starting_state;
+  // Copy initial state and alphabet from original NFA
+  window.minimized_DFA.initial_state = window.converted_DFA.initial_state;
   window.minimized_DFA.alphabet = Array.from(window.converted_DFA.alphabet);
 
   // No tiene tipo, por eso no sugiere nada

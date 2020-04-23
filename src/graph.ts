@@ -4,7 +4,6 @@ import { AutomataSelection, State } from './types';
 const width = 600, height = 500;
 const circle_radius = 25;
 
-
 export const setup_graph = (showing: AutomataSelection) => {
   // Clear title
   const page = d3.select('#page');
@@ -76,48 +75,38 @@ export const setup_graph = (showing: AutomataSelection) => {
 
   // Add nodes
   const node = svg.selectAll('.node')
-  
     .data(window[showing].states)
     .enter()
     .append('g')
     .attr('class', 'node');
 
-  svg.selectAll('g').filter(node => (node as State).name=='q0').append('marker')
-    .attr('id', 'arrowhead')
-    .attr('viewBox', '-0 -5 10 10')
-    .attr('refX', circle_radius + 10)
-    .attr('orient', 'auto')
-    .attr('markerWidth', 30)
-    .attr('markerHeight', 30)
-    //.append('path')
-    //.attr('d', 'M0,-5 L10,0 L0,5');
-
   node.append('circle')
     .attr('fill', 'lightgreen')
     .attr('r', circle_radius)
-    .attr('stroke', 'black')
-  /*svg.selectAll('g.node')
-    .each(function(d,i){
-      if((d as State).is_finishing_state){
+    .attr('stroke', 'black');
 
-      }
-    });*/
-  const finishingStates=svg.selectAll('g').filter(node => (node as State).is_finishing_state==true)
-  finishingStates.append('circle')
+  node.filter(node => node.is_finishing_state)
+    .append('circle')
     .attr('fill', 'lightgreen')
-    .attr('r', circle_radius-5)
-    .attr('stroke', 'black')
-  
-  //console.log(finishingStates)
+    .attr('r', circle_radius - 5)
+    .attr('stroke', 'black');
+
   node.append('text')
     .attr('dy', 5)
     .attr('text-anchor', 'middle')
     .text(d => d.name);
 
+  const init_state_triangle_size = 16;
+  node.filter(node => node.name === window[showing].initial_state)
+    .append('polygon')
+    .attr('stroke', 'black')
+    .attr('fill', 'white')
+    .attr('points', `-${circle_radius + init_state_triangle_size},${init_state_triangle_size} -${circle_radius + init_state_triangle_size},-${init_state_triangle_size} -${circle_radius},0`);
+
   // Add force simulation
-  d3.forceSimulation(window[showing].states)
-    .force('link', d3.forceLink(window[showing].transitions).distance(300).strength(1))
-    .force('charge', d3.forceManyBody())
+  const force_sim = d3.forceSimulation(window[showing].states)
+    .force('link', d3.forceLink(window[showing].transitions).distance(250).strength(0.8))
+    .force('charge', d3.forceManyBody().strength(-400))
     .force('center', d3.forceCenter(width / 2, height / 2))
     .on('tick', () => {
       node.attr('transform', d => `translate(${d.x},${d.y})`);
@@ -142,4 +131,25 @@ export const setup_graph = (showing: AutomataSelection) => {
         return 'rotate(0)';
       });
     });
+
+  // Add mouse drag to the nodes
+  const drag_function = d3.drag()
+    .on('start', (node: State) => {
+      d3.event.sourceEvent.stopPropagation();
+      if (!d3.event.active)
+        force_sim.alphaTarget(0.3).restart();
+      node.fx = node.x;
+      node.fy = node.y;
+    })
+    .on('drag', (node: State) => {
+      node.fx = d3.event.x;
+      node.fy = d3.event.y;
+    })
+    .on('end', (node: State) => {
+      if (!d3.event.active)
+        force_sim.alphaTarget(0);
+      node.fx = null;
+      node.fy = null;
+    });
+  node.call(drag_function);
 };

@@ -9,7 +9,7 @@ export interface FiniteAutomata {
 
 export interface State extends SimulationNodeDatum {
   name: string
-  is_finishing_state: boolean
+  is_final_state: boolean
 }
 
 export interface Transition extends SimulationLinkDatum<State> {

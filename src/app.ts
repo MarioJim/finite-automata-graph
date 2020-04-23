@@ -55,10 +55,10 @@ const add_button_listeners = () => {
   document.getElementById('originalNFABtn').onclick = () => {
     setup_graph('original_NFA');
   };
-  document.getElementById('convertToDFABtn').onclick = () => {
+  document.getElementById('convertedDFABtn').onclick = () => {
     setup_graph('converted_DFA');
   };
-  document.getElementById('minimizeDFABtn').onclick = () => {
+  document.getElementById('minimizedDFABtn').onclick = () => {
     setup_graph('minimized_DFA');
   };
 };
@@ -69,9 +69,10 @@ const add_button_listeners = () => {
  */
 const recieved_file = (file: string) => {
   parse_original_NFA(file);
-  console.log(window.original_NFA);
+  console.log('original_NFA', window.original_NFA);
   convert_NFA_to_DFA();
-  console.log(window.converted_DFA);
+  console.log('converted_DFA', window.converted_DFA);
   minimize_DFA();
+  console.log('minimized_DFA', window.minimized_DFA);
   setup_graph('original_NFA');
 };

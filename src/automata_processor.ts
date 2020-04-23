@@ -17,8 +17,7 @@ const merge_transitions = (automata: AutomataSelection) => {
     // Generate an id joining its source and its target
     const id = `${transition.source}_${transition.target}`;
     // Create an array if it hasn't been created
-    if (transitions_ids[id] === undefined)
-      transitions_ids[id] = [];
+    transitions_ids[id] = transitions_ids[id] || [];
     // Add the symbol to its array
     transitions_ids[id].push(transition.symbol);
   });
@@ -32,8 +31,9 @@ const merge_transitions = (automata: AutomataSelection) => {
     // Filter out every transition that has the same source and target
     window[automata].transitions = window[automata].transitions
       .filter(transition => transition.source !== source || transition.target !== target);
-    // Add a new one with the symbols merged together
-    const symbol = transition_group[1].join(',');
+    // Make symbols unique (if there are repeated transitions) and merge them together
+    const symbol = Array.from(new Set(transition_group[1])).join(',');
+    // Add the new transition
     window[automata].transitions.push({ source, target, symbol, });
   });
 };
@@ -56,7 +56,7 @@ export const parse_original_NFA = (file: String) => {
   // State names
   window.original_NFA.states = lines.shift().split(',').map(state_name => ({
     name: state_name,
-    is_finishing_state: false,
+    is_final_state: false,
   }));
   // Alphabet
   window.original_NFA.alphabet = lines.shift().split(',');
@@ -64,7 +64,7 @@ export const parse_original_NFA = (file: String) => {
   window.original_NFA.initial_state = lines.shift();
   // Finishing states
   lines.shift().split(',').forEach(state_name => {
-    window.original_NFA.states[find_state_index(state_name)].is_finishing_state = true;
+    window.original_NFA.states[find_state_index(state_name)].is_final_state = true;
   });
   // Transitions
   lines.forEach(transition_string => {
@@ -161,10 +161,10 @@ export const convert_NFA_to_DFA = () => {
   // Setup states of the converted DFA
   window.converted_DFA.states = Object.keys(DFA).map(name => {
     // Check if any state that composes this one is a finishing state in the original NFA
-    const is_finishing_state = name.split(',').some(state_name =>
-      window.original_NFA.states[find_state_index(state_name)].is_finishing_state
+    const is_final_state = name.split(',').some(state_name =>
+      window.original_NFA.states[find_state_index(state_name)].is_final_state
     );
-    return { name, is_finishing_state, };
+    return { name, is_final_state, };
   });
   // For every source_state: transitions relation in DFA
   Object.entries(DFA).forEach(([source_state, transitions]) => {
@@ -188,37 +188,72 @@ export const convert_NFA_to_DFA = () => {
  */
 export const minimize_DFA = () => {
   window.minimized_DFA = get_new_automata();
-  // Copy initial state and alphabet from original NFA
-  window.minimized_DFA.initial_state = window.converted_DFA.initial_state;
+  // Copy the alphabet from converted DFA
   window.minimized_DFA.alphabet = Array.from(window.converted_DFA.alphabet);
 
-  // No tiene tipo, por eso no sugiere nada
-  // Lo creo para crear un "id" para cada estado, que consiste de transiciones y si es estado final
-  // La idea es que si un id es igual a otro, puedes juntar ambos estados
-  const minDFA: any = {};
-  // Empiezo con si es final
+  // To minimize a DFA, we have to find states that have the same transitions
+  // and are either final or not final, so the main idea is concatenating
+  // this parameters into a string 'id'. This object saves relations between
+  // the state names and their ids
+  const minDFA: {
+    [key: string]: string[]
+  } = {};
+  // Add the first part, if the state is final
   window.converted_DFA.states.forEach(state => {
-    minDFA[state.name] = [state.is_finishing_state];
+    minDFA[state.name] = ['' + +state.is_final_state];
   });
-  // Le añado sus transiciones
+  // Add the transitions also
   window.converted_DFA.transitions.forEach(transition => {
     minDFA[window.converted_DFA.states[(transition.source as number)].name]
       .push('' + transition.symbol + transition.target);
   });
-  // Las ordeno y las junto
+  // Sort the id parts and merge them into the final id
   Object.keys(minDFA).forEach(key => {
     const value = minDFA[key].sort().join(':');
-    minDFA[key] = value;
+    minDFA[key] = [value];
   });
-  // Las imprimo en la consola
-  console.log(minDFA);
-
-  // Seguiría buscar si hay ids iguales
-  // Les sugiero ordenarlos y comparar entre pares
-  // Está medio culero volverlo a poner en el formato necesario para que lo muestre el d3
-  // Pero pueden checar el archivo de types para ver más o menos la estructura
-  // El grafo se leería de una estructura FiniteAutomata en window.minimized_DFA
-  // Ya tiene alphabet e initial state, falta volver a poner states y transitions
-
+  // Reverse the relations, into an object formed by id: state_name[]
+  const reversed_obj: {
+    [key: string]: string[]
+  } = {};
+  Object.entries(minDFA).forEach(([state_name, [id]]) => {
+    reversed_obj[id] = reversed_obj[id] || [state_name];
+    reversed_obj[id].push(state_name);
+  });
+  // Map the old names to their new names
+  const state_mappings_names = Object.fromEntries(
+    Object.values(reversed_obj)
+      .flatMap(equal_states => equal_states.map(state => [state, equal_states[0]]))
+  );
+  // Select the state names that should be deleted
+  const states_to_be_deleted = Object.entries(state_mappings_names)
+    .map(entry => entry[0] !== entry[1] ? entry[0] : undefined)
+    .filter(state_name => !!state_name);
+  // Filter from the old states the new states
+  const new_states = window.converted_DFA.states
+    .filter(state => !states_to_be_deleted.includes(state.name));
+  // Create the mapping between the old names/indexes to the new indexes
+  const state_mappings_indexes = Object.fromEntries(
+    Object.entries(state_mappings_names).map(([old_state_name, new_state_name]) => {
+      const old_state_index = window.converted_DFA.states.findIndex(s => s.name === old_state_name);
+      const new_state_index = new_states.findIndex(s => s.name === new_state_name);
+      return [old_state_index, new_state_index];
+    })
+  );
+  // Rename the states from the new states array
+  window.minimized_DFA.states = new_states.map(({ name, is_final_state }, i) => {
+    const new_name = `q${String.fromCharCode(i + 65)}`;
+    // Set the initial state
+    if (name === window.converted_DFA.initial_state)
+      window.minimized_DFA.initial_state = new_name;
+    return ({ name: new_name, is_final_state });
+  });
+  // Change the indexes from the transitions to the new indexes mapping
+  window.minimized_DFA.transitions = window.converted_DFA.transitions
+    .map(({ source, target, symbol }) => ({
+      source: state_mappings_indexes[(source as number)],
+      target: state_mappings_indexes[(target as number)],
+      symbol,
+    }));
   merge_transitions('minimized_DFA');
 };

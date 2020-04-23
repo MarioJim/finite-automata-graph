@@ -86,7 +86,7 @@ export const setup_graph = (showing: AutomataSelection) => {
     .attr('r', circle_radius)
     .attr('stroke', 'black');
 
-  node.filter(node => node.is_finishing_state)
+  node.filter(node => node.is_final_state)
     .append('circle')
     .attr('fill', 'lightgreen')
     .attr('r', circle_radius - 5)

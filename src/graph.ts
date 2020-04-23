@@ -4,6 +4,7 @@ import { AutomataSelection, State } from './types';
 const width = 600, height = 500;
 const circle_radius = 25;
 
+
 export const setup_graph = (showing: AutomataSelection) => {
   // Clear title
   const page = d3.select('#page');
@@ -75,15 +76,39 @@ export const setup_graph = (showing: AutomataSelection) => {
 
   // Add nodes
   const node = svg.selectAll('.node')
+  
     .data(window[showing].states)
     .enter()
     .append('g')
     .attr('class', 'node');
 
+  svg.selectAll('g').filter(node => (node as State).name=='q0').append('marker')
+    .attr('id', 'arrowhead')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', circle_radius + 10)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 30)
+    .attr('markerHeight', 30)
+    //.append('path')
+    //.attr('d', 'M0,-5 L10,0 L0,5');
+
   node.append('circle')
     .attr('fill', 'lightgreen')
-    .attr('r', circle_radius);
+    .attr('r', circle_radius)
+    .attr('stroke', 'black')
+  /*svg.selectAll('g.node')
+    .each(function(d,i){
+      if((d as State).is_finishing_state){
 
+      }
+    });*/
+  const finishingStates=svg.selectAll('g').filter(node => (node as State).is_finishing_state==true)
+  finishingStates.append('circle')
+    .attr('fill', 'lightgreen')
+    .attr('r', circle_radius-5)
+    .attr('stroke', 'black')
+  
+  //console.log(finishingStates)
   node.append('text')
     .attr('dy', 5)
     .attr('text-anchor', 'middle')

@@ -8,7 +8,7 @@ body {
 header {
     width: 100%;
     height: 8%;
-    background-color: whitesmoke;
+    background-color: rgb(186, 186, 186);
     display: flex;
     align-items: center;
     justify-content: space-evenly;
@@ -26,7 +26,13 @@ header p, header h2 {
     text-align: center;
 }
 
-#page {
+.paneTitle {
+    border-bottom: 2px solid black;
+    padding: 10px;
+    margin: 0;
+}
+
+#page1, #page2, #page3 {
     width: 100%;
     height: 92%;
     display: flex;

@@ -10,23 +10,35 @@
   <script src="app.bundle.js"></script>
 </head>
 
-<body>
+<body id="graphs">
   <header>
     <div>
       <h2>Computational</h2>
       <h2>Mathematics</h2>
     </div>
+    <!--
     <button type="button" id="originalNFABtn">Original NFA</button>
     <button type="button" id="convertedDFABtn">Converted DFA</button>
     <button type="button" id="minimizedDFABtn">Minimized DFA</button>
+    -->
     <div>
       <p>Mario Emilio Jiménez Vizcaíno A01173359</p>
       <p>Kevin Torres Martínez A01656257</p>
       <p>Juan Sebastián Rodríguez Galarza A01656159</p>
     </div>
   </header>
-  <div id="page">
+  <div id="page1">
     <h1>Drop a file here!</h1>
+    <h2 class="paneTitle" style="display: none;">Original NFA</h2>
+    <svg id="svgPane" style="display: none;">
+    </svg>
+  </div>
+  <div id="page2" style="display: none;">
+    <h2 class="paneTitle" style="display: none;">Converted DFA</h2>
+    <svg id="svgPane" style="display: none;"></svg>
+  </div>
+  <div id="page3" style="display: none;">
+    <h2 class="paneTitle" style="display: none;">Minimized DFA</h2>
     <svg id="svgPane" style="display: none;"></svg>
   </div>
 </body>

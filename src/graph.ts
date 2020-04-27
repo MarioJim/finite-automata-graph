@@ -4,11 +4,26 @@ import { AutomataSelection, State } from './types';
 const width = 600, height = 500;
 const circle_radius = 25;
 
+let panelNum = 0;
+let graphs: Array<AutomataSelection> = ['original_NFA', 'converted_DFA', 'minimized_DFA'];
+
+export function displayGraphs() {
+  panelNum = 0;
+  for (let i = 0; i < 3; i++) {
+    panelNum += 1;
+    setup_graph(graphs[i]);
+  }
+}
+
 export const setup_graph = (showing: AutomataSelection) => {
   // Clear title
-  const page = d3.select('#page');
+  const page = d3.select(`#page${panelNum}`);
   page.select('h1').remove();
-
+  page.style('display', 'block');
+  
+  // Select pane title
+  page.select('.paneTitle').style('display', 'block');
+  
   // Select SVG
   const svg = page.select('#svgPane')
     .attr('viewBox', `0 0 ${width} ${height}`)
@@ -44,30 +59,30 @@ export const setup_graph = (showing: AutomataSelection) => {
     .attr('d', 'M0,-5 L10,0 L0,5');
 
   // Add lines to links
-  const edgepaths = svg.selectAll('.edgepath')
+  const edgepaths = svg.selectAll(`.edgepath`)
     .data(window[showing].transitions)
     .enter()
     .append('path')
-    .attr('class', 'edgepath')
+    .attr('class', `.edgepath`)
     .attr('fill-opacity', 0)
     .attr('stroke', '#000')
-    .attr('id', (_, i) => `edgepath${i}`)
+    .attr('id', (_, i) => `edgepath${panelNum}-${i}`)
     .attr('marker-end', d => `url(#arrowhead${d.source === d.target ? '-self' : ''})`)
     .style('pointer-events', 'none');
 
   // Add titles to links
-  const edgelabels = svg.selectAll('.edgelabel')
+  const edgelabels = svg.selectAll(`.edgelabel`)
     .data(window[showing].transitions)
     .enter()
     .append('text')
     .attr('dy', -3)
-    .attr('class', 'edgelabel')
+    .attr('class', `.edgelabel`)
     .attr('font-size', 10)
-    .attr('id', (_, i) => `edgelabel${i}`)
+    .attr('id', (_, i) => `edgelabel${panelNum}-${i}`)
     .style('pointer-events', 'none');
 
   edgelabels.append('textPath')
-    .attr('href', (_, i) => `#edgepath${i}`)
+    .attr('href', (_, i) => `#edgepath${panelNum}-${i}`)
     .style('text-anchor', 'middle')
     .style('pointer-events', 'none')
     .attr('startOffset', '50%')
@@ -106,7 +121,7 @@ export const setup_graph = (showing: AutomataSelection) => {
 
   // Add force simulation
   const force_sim = d3.forceSimulation(window[showing].states)
-    .force('link', d3.forceLink(window[showing].transitions).distance(250).strength(0.8))
+    .force('link', d3.forceLink(window[showing].transitions).distance(200).strength(0.8))
     .force('charge', d3.forceManyBody().strength(-400))
     .force('center', d3.forceCenter(width / 2, height / 2))
     .on('tick', () => {

@@ -1,5 +1,5 @@
 import { parse_original_NFA, convert_NFA_to_DFA, minimize_DFA } from './automata_processor';
-import { displayGraphs } from './graph';
+import { display_graphs } from './graph';
 import { FiniteAutomata } from './types';
 
 declare global {
@@ -14,7 +14,6 @@ declare global {
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'interactive') {
     add_drop_listener();
-    //add_button_listeners();
   }
 });
 
@@ -30,7 +29,7 @@ const ignore_event = (event: DragEvent) => {
  * is called with the string of the file as a parameter.
  */
 const add_drop_listener = () => {
-  const page = document.getElementById('graphs');
+  const page = document.getElementsByTagName('body')[0];
   page.ondragenter = ignore_event;
   page.ondragover = ignore_event;
   page.ondrop = event => {
@@ -48,24 +47,6 @@ const add_drop_listener = () => {
 };
 
 /**
- * Adds the corresponding button listeners to the buttons in
- * the header
- */
-/*
-const add_button_listeners = () => {
-  document.getElementById('originalNFABtn').onclick = () => {
-    setup_graph('original_NFA');
-  };
-  document.getElementById('convertedDFABtn').onclick = () => {
-    setup_graph('converted_DFA');
-  };
-  document.getElementById('minimizedDFABtn').onclick = () => {
-    setup_graph('minimized_DFA');
-  };
-};
-*/
-
-/**
  * Processes the recieved file
  * @param file 
  */
@@ -76,6 +57,5 @@ const recieved_file = (file: string) => {
   console.log('converted_DFA', window.converted_DFA);
   minimize_DFA();
   console.log('minimized_DFA', window.minimized_DFA);
-  displayGraphs();
-  //setup_graph('original_NFA');
+  display_graphs();
 };

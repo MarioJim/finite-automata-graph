@@ -7,14 +7,12 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "develop": "webpack-dev-server --color --progress --config webpack.dev.js",
     "build": "webpack --color --progress --config webpack.prod.js",
-    "start": "yarn build && node server.js"
+    "start": "webpack-dev-server --color --progress --config webpack.dev.js"
   },
   "dependencies": {
     "@types/d3": "^5.7.2",
     "d3": "^5.15.1",
-    "express": "^4.17.1",
     "ts-loader": "^6.2.2",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",

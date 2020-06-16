@@ -1,40 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <title>Finite Automata</title>
+    <link href="styles.css" rel="stylesheet" />
+    <script src="app.bundle.js"></script>
+  </head>
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <title>Finite Automata</title>
-  <link href="styles.css" rel="stylesheet" />
-  <script src="app.bundle.js"></script>
-</head>
-
-<body>
-  <header>
-    <div>
-      <h2>Computational</h2>
-      <h2>Mathematics</h2>
+  <body>
+    <header>
+      <h1>Finite Automata Graph</h1>
+      <div>
+        <p>Mario Emilio Jiménez Vizcaíno A01173359</p>
+        <p>Kevin Torres Martínez A01656257</p>
+        <p>Juan Sebastián Rodríguez Galarza A01656159</p>
+      </div>
+    </header>
+    <div id="start-page">
+      <h1>Drop a file here!</h1>
+      <h3>Or try one of the included examples:</h3>
+      <div id="buttons">
+        <button>Example 1</button>
+        <button>Example 2</button>
+      </div>
     </div>
-    <div>
-      <p>Mario Emilio Jiménez Vizcaíno A01173359</p>
-      <p>Kevin Torres Martínez A01656257</p>
-      <p>Juan Sebastián Rodríguez Galarza A01656159</p>
+    <div id="page1" style="display: none;">
+      <h2 class="pane-title">Original NFA</h2>
+      <svg class="svg-pane"></svg>
     </div>
-  </header>
-  <div id="page1">
-    <h1>Drop a file here!</h1>
-    <h2 class="paneTitle" style="display: none;">Original NFA</h2>
-    <svg id="svgPane" style="display: none;"></svg>
-  </div>
-  <div id="page2" style="display: none;">
-    <h2 class="paneTitle" style="display: none;">Converted DFA</h2>
-    <svg id="svgPane" style="display: none;"></svg>
-  </div>
-  <div id="page3" style="display: none;">
-    <h2 class="paneTitle" style="display: none;">Minimized DFA</h2>
-    <svg id="svgPane" style="display: none;"></svg>
-  </div>
-</body>
-
+    <div id="page2" style="display: none;">
+      <h2 class="pane-title">Converted DFA</h2>
+      <svg class="svg-pane"></svg>
+    </div>
+    <div id="page3" style="display: none;">
+      <h2 class="pane-title">Minimized DFA</h2>
+      <svg class="svg-pane"></svg>
+    </div>
+    <button id="return-btn" style="display: none;">Return</button>
+  </body>
 </html>

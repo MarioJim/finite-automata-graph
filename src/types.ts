@@ -1,19 +1,19 @@
 import { SimulationNodeDatum, SimulationLinkDatum } from 'd3';
 
 export interface FiniteAutomata {
-  states: State[]
-  alphabet: string[]
-  transitions: Transition[]
-  initial_state: string
+  states: State[];
+  alphabet: string[];
+  transitions: Transition[];
+  initialState: string;
 }
 
 export interface State extends SimulationNodeDatum {
-  name: string
-  is_final_state: boolean
+  name: string;
+  isFinalState: boolean;
 }
 
 export interface Transition extends SimulationLinkDatum<State> {
-  symbol: string
+  symbol: string;
 }
 
-export type AutomataSelection = 'original_NFA' | 'converted_DFA' | 'minimized_DFA';
+export type AutomataSelection = 'originalNFA' | 'convertedDFA' | 'minimizedDFA';

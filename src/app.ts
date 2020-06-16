@@ -1,61 +1,92 @@
-import { parse_original_NFA, convert_NFA_to_DFA, minimize_DFA } from './automata_processor';
-import { display_graphs } from './graph';
+import {
+  parseOriginalNFA,
+  convertNFA2DFA,
+  minimizeDFA,
+} from './automata_processor';
+import { displayGraphs } from './graph';
 import { FiniteAutomata } from './types';
 
 declare global {
   interface Window {
-    original_NFA: FiniteAutomata
-    converted_DFA: FiniteAutomata
-    minimized_DFA: FiniteAutomata
+    originalNFA: FiniteAutomata;
+    convertedDFA: FiniteAutomata;
+    minimizedDFA: FiniteAutomata;
   }
 }
 
-// When document is ready, call add_drop_listener
+// When document is ready, call addDropListener
 document.addEventListener('readystatechange', () => {
   if (document.readyState === 'interactive') {
-    add_drop_listener();
+    addDropListener();
+    enableExampleButtons();
+    enableReturnButton();
   }
 });
 
-const ignore_event = (event: DragEvent) => {
+const ignoreEvent = (event: DragEvent) => {
   event.stopPropagation();
   event.preventDefault();
 };
 
 /**
  * Adds the drop listener to the element #page.
- * 
- * When an plain text file is dropped into the area, recieved_file
+ *
+ * When an plain text file is dropped into the area, recievedFile
  * is called with the string of the file as a parameter.
  */
-const add_drop_listener = () => {
+const addDropListener = () => {
   const page = document.getElementsByTagName('body')[0];
-  page.ondragenter = ignore_event;
-  page.ondragover = ignore_event;
-  page.ondrop = event => {
-    ignore_event(event);
+  page.ondragenter = ignoreEvent;
+  page.ondragover = ignoreEvent;
+  page.ondrop = (event) => {
+    ignoreEvent(event);
     if (event.dataTransfer.files.length !== 1) return;
     const file = event.dataTransfer.files[0];
     if (file.type !== 'text/plain') return;
     const reader = new FileReader();
-    reader.onload = event => {
+    reader.onload = (event) => {
       if (typeof event.target.result === 'string')
-        recieved_file(event.target.result);
+        recievedFile(event.target.result);
     };
     reader.readAsText(file);
   };
 };
 
 /**
- * Processes the recieved file
- * @param file 
+ * Adds an onclick callback to every button in div#buttons
  */
-const recieved_file = (file: string) => {
-  parse_original_NFA(file);
-  console.log('original_NFA', window.original_NFA);
-  convert_NFA_to_DFA();
-  console.log('converted_DFA', window.converted_DFA);
-  minimize_DFA();
-  console.log('minimized_DFA', window.minimized_DFA);
-  display_graphs();
+const enableExampleButtons = () => {
+  const buttonsDiv = document.getElementById('buttons');
+  Array.from(buttonsDiv.getElementsByTagName('button')).forEach((child, i) => {
+    child.onclick = async () => {
+      const response = await fetch(`${i + 1}.txt`);
+      const file = await response.text();
+      recievedFile(file);
+    };
+  });
+};
+
+const enableReturnButton = () => {
+  const returnBtn = document.getElementById('return-btn') as HTMLButtonElement;
+  returnBtn.onclick = () => {
+    document.getElementById('start-page').style.display = 'flex';
+    ['page1', 'page2', 'page3'].forEach((pageID) => {
+      document.getElementById(pageID).style.display = 'none';
+    });
+    document.getElementById('return-btn').style.display = 'none';
+  };
+};
+
+/**
+ * Processes the recieved file
+ * @param file
+ */
+const recievedFile = (file: string) => {
+  document.getElementById('start-page').style.display = 'none';
+  document.getElementById('return-btn').style.display = 'block';
+
+  parseOriginalNFA(file);
+  convertNFA2DFA();
+  minimizeDFA();
+  displayGraphs();
 };
